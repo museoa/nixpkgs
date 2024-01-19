@@ -61,4 +61,10 @@ rec {
     versionSuffix = lib.removePrefix numericVersion version;
   in lib.concatStringsSep "." (lib.take n (lib.splitVersion numericVersion ++ lib.genList (_: "0") n)) + versionSuffix;
 
+  # lib.compareVersions, extended to allow `null` as the maximal version
+  compare = v1: v2:
+    if      v1==null && v2==null then 0
+    else if v1==null             then 1
+    else if             v2==null then -1
+    else builtins.compareVersions v1 v2;
 }
