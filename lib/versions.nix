@@ -67,4 +67,23 @@ rec {
     else if v1==null             then 1
     else if             v2==null then -1
     else builtins.compareVersions v1 v2;
+
+  # Check if a version matches a versionSpec.  A versionSpec is
+  # either:
+  # - a string consisting of a version prefixed with one of: ">=", "<=", "<", ">", or "="
+  # - a list of versionSpecs, interpreted as a disjunction (logical-or)
+  match = versionSpec: version:
+    if lib.isList versionSpec
+    then lib.any (spec: match spec version) versionSpec
+    else if lib.hasPrefix "<=" versionSpec
+    then lib.versions.compare version (lib.removePrefix "<=" versionSpec) <= 0
+    else if lib.hasPrefix ">=" versionSpec
+    then lib.versions.compare version (lib.removePrefix ">=" versionSpec) >= 0
+    else if lib.hasPrefix "<" versionSpec
+    then lib.versions.compare version (lib.removePrefix "<" versionSpec) < 0
+    else if lib.hasPrefix ">" versionSpec
+    then lib.versions.compare version (lib.removePrefix ">" versionSpec) > 0
+    else if lib.hasPrefix "=" versionSpec
+    then lib.versions.compare version (lib.removePrefix "=" versionSpec) == 0
+    else throw "unrecognized versionSpec: ${versionSpec}";
 }
