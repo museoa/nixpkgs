@@ -129,6 +129,8 @@ rec {
       lib.flip lib.mapAttrs prev
         (ver: pkg:
           if !(lib.isDerivation pkg) then pkg
+          # stdenv doesn't have .overrideAttrs....
+          else if !(pkg?overrideAttrs) then pkg // { __versions = final; }
           else pkg.overrideAttrs (previousAttrs: {
             passthru = previousAttrs.passthru // {
               __versions = final;
