@@ -86,4 +86,84 @@ rec {
     else if lib.hasPrefix "=" versionSpec
     then lib.versions.compare version (lib.removePrefix "=" versionSpec) == 0
     else throw "unrecognized versionSpec: ${versionSpec}";
+
+  # makeVersioned: constructs a pkg.__versions set, and returns its
+  # best element.
+  #
+  # This function takes a recursive attrset
+  #
+  #   versionsFunc :: AttrsOf<Pkg> -> AttrsOf<Pkg>
+  #
+  # whose fixpoint will be the __versions attribute of each Pkg.
+  # Specifically, this function will tie the fixpoint knot, insert
+  # the final __versions attribute into each versioned package, and
+  # project out the best version __versions.best.
+  #
+  # pkg.__versions has the following attributes which may be
+  # overridden using pkg.__versions.extends:
+  #
+  # - unstable : String or null = the least unstable version
+  #   identifier (which need not be present in the attrNames of
+  #   __versions).  All versions greater than or equal to this are
+  #   considered unstable; all versions strictly less than this are
+  #   considered stable.  The `null` value means "infinity"
+  #   (i.e. there are no unstable versions)
+  #
+  # __versions has the following attributes which should not be
+  # overridden using pkg.__versions.extends:
+  #
+  # - best : Pkg = the newest stable package (i.e. attrvalue whose
+  #   attrname is lib.versions.compare-wise largest but strictly
+  #   less than __versions.unstable).
+  #
+  # - require : VersionSpec -> Pkg = a function which accepts a
+  #   VersionSpec string (see lib.versions.match), deletes from
+  #   __versions all versions which do not match the specification,
+  #   and then returns the .best attribute of the resulting
+  #   __versions.
+  #
+  makeVersioned = let
+
+    # insert the __versions attrset into passthru of each package
+    lastOverlay = final: prev:
+      lib.flip lib.mapAttrs prev
+        (ver: pkg:
+          if !(lib.isDerivation pkg) then pkg
+          else pkg.overrideAttrs (previousAttrs: {
+            passthru = previousAttrs.passthru // {
+              __versions = final;
+            };
+          }));
+
+    # find the package with maximal version less than `unstable`
+    findBest = final: lib.pipe final [
+      (lib.filterAttrs (ver: pkg: ver != "best" && lib.isDerivation pkg))
+      lib.attrNames
+      (lib.filter (ver: lib.versions.compare (final.unstable or null) ver >= 0))
+      (lib.sort (v1: v2: builtins.compareVersions v1 v2 < 0))
+      (list:
+        assert list == [] -> throw "no versions remain after filtering!";
+        lib.last list)
+      (attrName: final.${attrName})
+    ];
+
+    # filter a __versions set, leaving only the versions which match `versionSpec`
+    require = final: versionSpec:
+      final.extends (final: prev:
+        lib.flip lib.mapAttrs prev
+          (ver: pkg:
+            if !(lib.isDerivation pkg) then pkg
+            else if lib.versions.match versionSpec ver then pkg
+            else null));
+
+  in versionsFunc:
+    lib.makeExtensible' {
+      postFunc = final: final.best;
+      inherit lastOverlay;
+    }
+      (final: {
+        unstable = null;
+        best = findBest final;
+        require = require final;
+      } // versionsFunc final);
 }
