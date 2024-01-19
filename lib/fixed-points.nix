@@ -394,4 +394,28 @@ rec {
     fix' (self: (rattrs self) // {
       ${extenderName} = f: makeExtensibleWithCustomName extenderName (extends f rattrs);
     });
+
+  /*
+    Same as `makeExtensibleWithCustomName`, but:
+
+    - Takes named arguments rather than positional arguments.
+
+    - Takes an optional `postFunc`; if supplied, the `postFunc` is
+      applied after all extensions (i.e. `extends` will insert the
+      new overlay after all previous overlays but before the
+      `postFunc`).  If postFunc has type `AttrSet -> X` then both
+      `makeExtensible'` and `.extends` will return values of type
+      `X`.  Typically the `postFunc` is some kind of projection of
+      the recursive set, and the projected element has some way of
+      getting back its containing recursive set.  See `__versions`
+      for a motivating example.
+  */
+  makeExtensible' =
+    { extenderName ? "extends"
+    , postFunc ? (x: x)
+    , lastOverlay ? (final: prev: prev)
+    }@args: rattrs:
+    postFunc (fix' (self: ((extends lastOverlay rattrs) self) // {
+      ${extenderName} = f: (makeExtensible' args (extends f rattrs));
+    }));
 }
