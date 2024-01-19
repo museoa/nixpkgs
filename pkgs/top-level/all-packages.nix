@@ -15040,6 +15040,10 @@ with pkgs;
       extraBuildInputs = lib.optional stdenv.hostPlatform.isDarwin clang.cc;
     };
 
+  gccStdenv' = lib.versions.makeVersioned (final:
+    lib.flip lib.mapAttrs buildPackages.gcc.__versions
+      (_: gcc: overrideCC gccStdenv gcc));
+
   gcc49Stdenv = overrideCC gccStdenv buildPackages.gcc49;
   gcc6Stdenv = overrideCC gccStdenv buildPackages.gcc6;
   gcc7Stdenv = overrideCC gccStdenv buildPackages.gcc7;

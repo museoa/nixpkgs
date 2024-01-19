@@ -11,6 +11,7 @@
 , cloog_0_18_0, cloog
 , lowPrio
 , wrapCC
+, default-gcc-version
 }@args:
 
 let
@@ -18,7 +19,6 @@ let
   gccForMajorMinorVersion = majorMinorVersion:
     let
       atLeast = lib.versionAtLeast majorMinorVersion;
-      attrName = "gcc${lib.replaceStrings ["."] [""] majorMinorVersion}";
       pkg = lowPrio (wrapCC (callPackage ./default.nix ({
         inherit noSysDirs;
         inherit majorMinorVersion;
@@ -44,7 +44,17 @@ let
         stdenv = if (stdenv.targetPlatform != stdenv.buildPlatform) && stdenv.cc.isGNU then gcc7Stdenv else stdenv;
       })));
     in
-      lib.nameValuePair attrName pkg;
+      lib.nameValuePair pkg.version pkg;
+
+  allVersions =
+    lib.pipe versions.allMajorVersions [
+      (map gccForMajorMinorVersion)
+      lib.listToAttrs
+    ];
 in
-lib.listToAttrs (map gccForMajorMinorVersion versions.allMajorVersions)
+lib.versions.makeVersioned
+  (final:
+    { unstable = "${toString (default-gcc-version + 1)}.0.0"; }
+    // allVersions)
+
 
