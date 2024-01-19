@@ -1,7 +1,6 @@
 { lib
 , stdenv
-, gccStdenv
-, gcc7Stdenv
+#, gcc7Stdenv
 , callPackage
 , isl_0_11, isl_0_14, isl_0_17, isl_0_20
 , libcCross
@@ -41,7 +40,7 @@ let
                 else          /* 4.8 */    cloog;
       } // lib.optionalAttrs (atLeast "6" && !(atLeast "9")) {
         # gcc 10 is too strict to cross compile gcc <= 8
-        stdenv = if (stdenv.targetPlatform != stdenv.buildPlatform) && stdenv.cc.isGNU then gcc7Stdenv else stdenv;
+        #stdenv = if (stdenv.targetPlatform != stdenv.buildPlatform) && stdenv.cc.isGNU then gcc7Stdenv else stdenv;
       })));
     in
       lib.nameValuePair pkg.version pkg;

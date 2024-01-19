@@ -678,7 +678,7 @@ in
       } // lib.optionalAttrs (super.stdenv.targetPlatform == localSystem) {
         # Need to get rid of these when cross-compiling.
         inherit (prevStage) binutils binutils-unwrapped;
-        gcc = cc;
+        #gcc = cc;
       };
     };
   })
