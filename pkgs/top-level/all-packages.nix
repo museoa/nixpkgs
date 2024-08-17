@@ -15015,7 +15015,7 @@ with pkgs;
   default-gcc-version =
     if (with stdenv.targetPlatform; isVc4 || libc == "relibc") then 6
     else 13;
-  gcc = pkgs.${"gcc${toString default-gcc-version}"};
+  gcc = callPackage ../development/compilers/gcc/all.nix { inherit noSysDirs; };
   gccFun = callPackage ../development/compilers/gcc;
   gcc-unwrapped = gcc.cc;
 
@@ -15139,10 +15139,119 @@ with pkgs;
       extraPackages = [];
   };
 
-  inherit (callPackage ../development/compilers/gcc/all.nix { inherit noSysDirs; })
-    gcc48 gcc49 gcc6 gcc7 gcc8 gcc9 gcc10 gcc11 gcc12 gcc13 gcc14;
+  gcc_latest = gcc;
 
-  gcc_latest = gcc14;
+  # legacy attrnames for compatibility -- the definitions below
+  # should be inlined at their points of use and then removed from
+  # all-packages.nix after the next release.
+  gcc48 = gcc.__versions.require  "<4.9.0";
+  gcc49 = gcc.__versions.require  "<5.0.0";
+  gcc6  = gcc.__versions.require  "<7.0.0";
+  gcc7  = gcc.__versions.require  "<8.0.0";
+  gcc8  = gcc.__versions.require  "<9.0.0";
+  gcc9  = gcc.__versions.require "<10.0.0";
+  gcc10 = gcc.__versions.require "<11.0.0";
+  gcc11 = gcc.__versions.require "<12.0.0";
+  gcc12 = gcc.__versions.require "<13.0.0";
+  gcc13 = gcc.__versions.require "<14.0.0";
+  gcc14 = gcc.__versions.require "<15.0.0";
+
+  # Use the same GCC version as the one from stdenv by default
+  gfortran = wrapCC (gcc.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran48 = wrapCC (gcc48.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran49 = wrapCC (gcc49.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran6 = wrapCC (gcc6.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran7 = wrapCC (gcc7.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran8 = wrapCC (gcc8.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran9 = wrapCC (gcc9.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran10 = wrapCC (gcc10.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran11 = wrapCC (gcc11.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran12 = wrapCC (gcc12.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran13 = wrapCC (gcc13.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
+
+  gfortran14 = wrapCC (gcc14.cc.override {
+    name = "gfortran";
+    langFortran = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+  });
 
   libgccjit = gcc.cc.override {
     name = "libgccjit";
