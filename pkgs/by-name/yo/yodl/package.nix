@@ -33,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     patchShebangs ./build ./scripts/
     substituteInPlace INSTALL.im \
+      --replace "gcc" "$CC" \
+      --replace "g++" "$CXX" \
       --replace "/usr" "$out"
     substituteInPlace macros/rawmacros/startdoc.pl \
       --replace "/usr/bin/perl" "${lib.getExe perl}"
