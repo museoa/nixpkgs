@@ -20,7 +20,7 @@ jobs:
         id: merge-upstream
         with:
           branch: ${{ matrix.branch }}
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           # The job has the following outputs that matches the API response.
           # They may be useful for further automation.
